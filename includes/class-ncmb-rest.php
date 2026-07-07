@@ -2,6 +2,9 @@
 /**
  * REST endpoints. All endpoints are restricted to administrators.
  *
+ * Every data endpoint is scoped to a specific account via the `account`
+ * parameter (an account id). When omitted, the first configured account is used.
+ *
  * @package NextcloudMediaBridge
  */
 
@@ -37,6 +40,22 @@ class NCMB_REST {
 	}
 
 	public function register_routes() {
+		$account_arg = array(
+			'type'              => 'string',
+			'default'           => '',
+			'sanitize_callback' => 'sanitize_text_field',
+		);
+
+		register_rest_route(
+			self::NS,
+			'/accounts',
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => array( $this, 'handle_accounts' ),
+				'permission_callback' => array( $this, 'permission_check' ),
+			)
+		);
+
 		register_rest_route(
 			self::NS,
 			'/list',
@@ -45,6 +64,7 @@ class NCMB_REST {
 				'callback'            => array( $this, 'handle_list' ),
 				'permission_callback' => array( $this, 'permission_check' ),
 				'args'                => array(
+					'account'  => $account_arg,
 					'path'     => array(
 						'type'              => 'string',
 						'default'           => '',
@@ -72,7 +92,8 @@ class NCMB_REST {
 				'callback'            => array( $this, 'handle_paths' ),
 				'permission_callback' => array( $this, 'permission_check' ),
 				'args'                => array(
-					'path' => array(
+					'account' => $account_arg,
+					'path'    => array(
 						'type'              => 'string',
 						'default'           => '',
 						'sanitize_callback' => array( $this, 'sanitize_path' ),
@@ -89,9 +110,10 @@ class NCMB_REST {
 				'callback'            => array( $this, 'handle_thumb' ),
 				'permission_callback' => array( $this, 'permission_check' ),
 				'args'                => array(
+					'account' => $account_arg,
 					'file_id' => array(
 						'type'              => 'integer',
-						'required'          => true,
+						'default'           => 0,
 						'sanitize_callback' => 'absint',
 					),
 					'path'    => array(
@@ -121,7 +143,8 @@ class NCMB_REST {
 				'callback'            => array( $this, 'handle_import' ),
 				'permission_callback' => array( $this, 'permission_check' ),
 				'args'                => array(
-					'path' => array(
+					'account' => $account_arg,
+					'path'    => array(
 						'type'              => 'string',
 						'required'          => true,
 						'sanitize_callback' => array( $this, 'sanitize_path' ),
@@ -142,17 +165,50 @@ class NCMB_REST {
 	}
 
 	/**
-	 * Fetches the full folder listing (briefly cached) so that paging and
-	 * "whole folder" do not trigger another PROPFIND.
+	 * Resolves the account for a request, or a WP_Error when it does not exist.
 	 *
-	 * @param string $path Path relative to the user root.
+	 * @param WP_REST_Request $request Request.
 	 * @return array|WP_Error
 	 */
-	private function get_full_listing( $path ) {
-		$cache_key = 'ncmb_list_' . md5( $path );
+	private function resolve_account( WP_REST_Request $request ) {
+		$id      = (string) $request->get_param( 'account' );
+		$account = NCMB_Settings::get_account( $id );
+		if ( null === $account ) {
+			return new WP_Error( 'ncmb_no_account', __( 'The selected cloud account does not exist.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 404 ) );
+		}
+		return $account;
+	}
+
+	/**
+	 * Lists the configured accounts (no secrets). Used by the settings test and
+	 * as a fallback source for the media browser.
+	 */
+	public function handle_accounts() {
+		$out = array();
+		foreach ( NCMB_Settings::get_accounts() as $account ) {
+			$out[] = array(
+				'id'        => $account['id'],
+				'label'     => '' !== $account['label'] ? $account['label'] : NCMB_Providers::label( $account['provider'] ),
+				'provider'  => $account['provider'],
+				'root_path' => $account['root_path'],
+			);
+		}
+		return rest_ensure_response( array( 'accounts' => $out ) );
+	}
+
+	/**
+	 * Fetches the full folder listing (briefly cached) so that paging and
+	 * "whole folder" do not trigger another PROPFIND. Cached per account + path.
+	 *
+	 * @param array  $account The account.
+	 * @param string $path    Path relative to the user root.
+	 * @return array|WP_Error
+	 */
+	private function get_full_listing( array $account, $path ) {
+		$cache_key = 'ncmb_list_' . md5( $account['id'] . '|' . $path );
 		$full      = get_transient( $cache_key );
 		if ( false === $full ) {
-			$webdav = new NCMB_WebDAV();
+			$webdav = new NCMB_WebDAV( $account );
 			$full   = $webdav->list_directory( $path );
 			if ( is_wp_error( $full ) ) {
 				return $full;
@@ -163,17 +219,21 @@ class NCMB_REST {
 	}
 
 	public function handle_list( WP_REST_Request $request ) {
-		$settings = NCMB_Settings::get();
-		$path     = $request->get_param( 'path' );
+		$account = $this->resolve_account( $request );
+		if ( is_wp_error( $account ) ) {
+			return $account;
+		}
+
+		$path = $request->get_param( 'path' );
 		if ( '' === $path || '/' === $path ) {
-			$path = $settings['root_path'];
+			$path = $account['root_path'];
 		}
 
 		$page     = max( 1, (int) $request->get_param( 'page' ) );
 		$per_page = (int) $request->get_param( 'per_page' );
 		$per_page = $per_page < 1 ? 40 : min( 100, $per_page );
 
-		$full = $this->get_full_listing( $path );
+		$full = $this->get_full_listing( $account, $path );
 		if ( is_wp_error( $full ) ) {
 			return $full;
 		}
@@ -195,8 +255,9 @@ class NCMB_REST {
 
 		return rest_ensure_response(
 			array(
+				'account'    => $account['id'],
 				'path'       => $full['path'],
-				'root_path'  => $settings['root_path'],
+				'root_path'  => $account['root_path'],
 				'dirs'       => array_values( $dirs ),
 				'images'     => array_values( $page_images ),
 				'pagination' => array(
@@ -213,13 +274,17 @@ class NCMB_REST {
 	 * Returns all image paths of a folder (for "select whole folder").
 	 */
 	public function handle_paths( WP_REST_Request $request ) {
-		$settings = NCMB_Settings::get();
-		$path     = $request->get_param( 'path' );
-		if ( '' === $path || '/' === $path ) {
-			$path = $settings['root_path'];
+		$account = $this->resolve_account( $request );
+		if ( is_wp_error( $account ) ) {
+			return $account;
 		}
 
-		$full = $this->get_full_listing( $path );
+		$path = $request->get_param( 'path' );
+		if ( '' === $path || '/' === $path ) {
+			$path = $account['root_path'];
+		}
+
+		$full = $this->get_full_listing( $account, $path );
 		if ( is_wp_error( $full ) ) {
 			return $full;
 		}
@@ -233,28 +298,34 @@ class NCMB_REST {
 
 		return rest_ensure_response(
 			array(
-				'path'  => $full['path'],
-				'paths' => $paths,
-				'total' => count( $paths ),
+				'account' => $account['id'],
+				'path'    => $full['path'],
+				'paths'   => $paths,
+				'total'   => count( $paths ),
 			)
 		);
 	}
 
 	/**
-	 * Streams a thumbnail from Nextcloud straight to the browser.
+	 * Streams a thumbnail from the cloud server straight to the browser.
 	 * Outputs binary image data and ends the request (no JSON).
 	 */
 	public function handle_thumb( WP_REST_Request $request ) {
+		$account = $this->resolve_account( $request );
+		if ( is_wp_error( $account ) ) {
+			return $account;
+		}
+
 		$file_id = (int) $request->get_param( 'file_id' );
 		$path    = $request->get_param( 'path' );
 		$size    = (int) $request->get_param( 'size' );
 		$bytes   = (int) $request->get_param( 'bytes' );
 
-		if ( $file_id <= 0 ) {
-			return new WP_Error( 'ncmb_bad_id', __( 'Invalid file ID.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
+		if ( $file_id <= 0 && ( '' === $path || '/' === $path ) ) {
+			return new WP_Error( 'ncmb_bad_id', __( 'Invalid image reference.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
 		}
 
-		$thumb = NCMB_Thumbnails::get( $file_id, $path, $size > 0 ? $size : 256, $bytes );
+		$thumb = NCMB_Thumbnails::get( $account, $file_id, $path, $size > 0 ? $size : 256, $bytes );
 		if ( is_wp_error( $thumb ) ) {
 			return $thumb;
 		}
@@ -279,9 +350,14 @@ class NCMB_REST {
 	}
 
 	public function handle_import( WP_REST_Request $request ) {
+		$account = $this->resolve_account( $request );
+		if ( is_wp_error( $account ) ) {
+			return $account;
+		}
+
 		$path     = $request->get_param( 'path' );
 		$importer = new NCMB_Importer();
-		$result   = $importer->import( $path );
+		$result   = $importer->import( $account, $path );
 		if ( is_wp_error( $result ) ) {
 			return $result;
 		}

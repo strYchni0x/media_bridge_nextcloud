@@ -1,112 +1,135 @@
-=== strychni0x Media Bridge for Nextcloud ===
+=== strychni0x Media Bridge for Nextcloud & ownCloud ===
 Contributors: strychni0x
-Tags: media, nextcloud, media-library, webdav, images
+Tags: media, nextcloud, owncloud, webdav, media-library
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 2.0.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Browse images stored on a Nextcloud server directly from the WordPress media modal and import them into the media library. Administrators only.
+Browse images on Nextcloud or ownCloud servers from the WordPress media modal and import them into the media library. Administrators only.
 
 == Description ==
 
-strychni0x Media Bridge for Nextcloud adds a "Nextcloud" tab to the WordPress media modal
+strychni0x Media Bridge adds a "Cloud" tab to the WordPress media modal
 (the "Add Media" dialog). From there an administrator can browse the folders of
-a configured Nextcloud account, preview the file names and import images into
-the WordPress media library with a single click.
+one or more configured cloud accounts, preview the file names and import images
+into the WordPress media library with a single click.
+
+The plugin works with WebDAV-based clouds of the Nextcloud family:
+
+* Nextcloud
+* ownCloud
+
+You can connect several accounts of mixed types at the same time and switch
+between them with a dropdown in the media dialog.
 
 Imported images become regular WordPress attachments (a copy is downloaded from
-Nextcloud), so they work with every theme, block and page builder without any
-further integration.
+the cloud server), so they work with every theme, block and page builder without
+any further integration.
 
 = Features =
 
-* Adds a dedicated "Nextcloud" tab to the media modal.
-* Adds an "Import from Nextcloud" button to the Media Library and the
+* Adds a dedicated "Cloud" tab to the media modal.
+* Adds an "Import from cloud" button to the Media Library and the
   "Add New Media File" screen, opening the browser in its own dialog.
-* Browse Nextcloud folders via WebDAV.
-* Thumbnail previews with a selectable source: use the Nextcloud preview
-  endpoint (default), or have WordPress generate and cache the thumbnails itself
-  (useful when your Nextcloud server has preview generation disabled).
+* Connect multiple Nextcloud / ownCloud accounts at once and pick
+  which one to browse from a dropdown.
+* Browse cloud folders via WebDAV.
+* Thumbnail previews with a per-account selectable source: use the server's
+  native preview/thumbnail endpoint (default), or have WordPress generate and
+  cache the thumbnails itself (useful when the server has preview generation
+  disabled – and a reliable fallback for servers whose preview API differs).
 * Paginated image listing for folders with many photos.
 * Import images as standard WordPress attachments – one at a time or several at
   once via multi-select.
 * Access restricted to administrators (the `manage_options` capability).
-* Connection test on the settings screen.
+* Per-account connection test on the settings screen.
 
 = Access control =
 
 Every part of the plugin – the settings screen, the REST endpoints and the
-JavaScript that renders the Nextcloud tab – requires the `manage_options`
+JavaScript that renders the "Cloud" tab – requires the `manage_options`
 capability. Non-administrators never receive the script and cannot call the
 REST endpoints. The required capability can be changed with the
 `ncmb_required_capability` filter.
 
 == External services ==
 
-This plugin connects to a Nextcloud server that **you** configure on the plugin
-settings screen. It is not a third-party hosted service operated by the plugin
-author; you point it at your own (or your organisation's) Nextcloud instance.
+This plugin connects to the Nextcloud or ownCloud servers that **you** configure
+on the plugin settings screen. It is not a third-party hosted service operated by
+the plugin author; you point it at your own (or your organisation's) cloud
+instances.
 
 What is sent, and when:
 
-* When an administrator opens the "Nextcloud" tab or clicks the connection test,
-  the plugin sends a WebDAV `PROPFIND` request to the configured Nextcloud URL
+* When an administrator opens the "Cloud" tab or clicks the connection test,
+  the plugin sends a WebDAV `PROPFIND` request to the configured server URL
   to list folder contents. The request includes the configured username and
   app password as an HTTP Basic authentication header.
-* When the "Nextcloud" tab shows images, the plugin requests a thumbnail for
-  each image from the Nextcloud preview endpoint
-  (`/index.php/core/preview`, authenticated) and proxies it to the browser. If
-  that endpoint returns no preview, the plugin downloads the image via WebDAV
-  once, generates a thumbnail on the WordPress server and caches it.
+* When the "Cloud" tab shows images, the plugin requests a thumbnail for each
+  image from the server's native preview/thumbnail endpoint (Nextcloud:
+  `/index.php/core/preview`; ownCloud: the files thumbnail API – both
+  authenticated) and proxies it to the browser.
+  If that returns no preview, or if the account is set to "Generate in
+  WordPress", the plugin downloads the image via WebDAV once, generates a
+  thumbnail on the WordPress server and caches it.
 * When an administrator imports an image, the plugin sends a WebDAV `GET`
   request (again authenticated) to download that single file.
 
-No data is sent anywhere other than the Nextcloud URL you configure. All
-requests originate from your WordPress server, not from the visitor's browser.
+No data is sent anywhere other than the server URLs you configure. All requests
+originate from your WordPress server, not from the visitor's browser.
 
-The data handling of that Nextcloud instance is governed by its own operator.
-Please refer to the documentation and privacy policy of your Nextcloud provider:
+The data handling of each cloud instance is governed by its own operator. Please
+refer to the documentation and privacy policy of your provider:
 
 * Nextcloud: https://nextcloud.com/ – Privacy: https://nextcloud.com/privacy/
+* ownCloud: https://owncloud.com/ – Privacy: https://owncloud.com/privacy-policy/
 
 == Installation ==
 
 1. Upload the `strychni0x-media-bridge-for-nextcloud` folder to `/wp-content/plugins/`.
 2. Activate the plugin through the "Plugins" menu in WordPress.
-3. In Nextcloud go to Settings → Security → "Create new app password" and copy
-   the generated password.
-4. In WordPress go to Settings → Nextcloud Media and enter the Nextcloud URL,
-   the username, the app password and (optionally) a start folder. Click
-   "Check connection" to verify.
-5. Open the "Add Media" dialog in the editor or media library; a new
-   "Nextcloud" tab is now available.
+3. In your cloud (Nextcloud/ownCloud) go to Settings → Security →
+   "Create new app password" and copy the generated password.
+4. In WordPress go to Settings → Cloud Media, choose the cloud type and enter the
+   server URL, the username, the app password and (optionally) a start folder.
+   Click "Check connection" to verify. Use "Add cloud" to connect more accounts.
+5. Open the "Add Media" dialog in the editor or media library; a new "Cloud" tab
+   is now available (with a dropdown to pick the account when you have several).
 
 == Frequently Asked Questions ==
 
+= Which cloud servers are supported? =
+
+Nextcloud and ownCloud – WebDAV-based servers of the Nextcloud family that
+support app passwords. You can connect several accounts of mixed types at the
+same time and switch between them in the media dialog.
+
 = Are the images copied or referenced? =
 
-Copied. When you import an image it is downloaded from Nextcloud and stored as a
-regular WordPress attachment. There is no live link back to Nextcloud after the
-import.
+Copied. When you import an image it is downloaded from the cloud server and
+stored as a regular WordPress attachment. There is no live link back to the
+cloud after the import.
 
 = The thumbnails stay grey – what can I do? =
 
-Some Nextcloud servers do not generate image previews. In that case the default
-"from Nextcloud" mode has nothing to show. Go to Settings → Nextcloud Media and
-switch "Thumbnails" to "generate in WordPress"; WordPress will then download each
-image once, build a cached thumbnail and display it.
+Some servers do not generate image previews, and preview endpoints differ
+between Nextcloud and ownCloud. In that case the default "from the
+cloud server" mode has nothing to show. Go to Settings → Cloud Media and switch
+that account's "Thumbnails" option to "Generate in WordPress"; WordPress will
+then download each image once, build a cached thumbnail and display it. This
+mode works with every supported server.
 
-= Who can use the Nextcloud tab? =
+= Who can use the Cloud tab? =
 
 Only administrators (users with the `manage_options` capability). You can change
 the required capability with the `ncmb_required_capability` filter.
 
-= Is my Nextcloud password safe? =
+= Is my cloud password safe? =
 
-Use an app password (Settings → Security in Nextcloud), never your real login
+Use an app password (Settings → Security in your cloud), never your real login
 password, so you can revoke it at any time. The credentials are used only on the
 server to authenticate WebDAV requests and are never exposed to the browser.
 
@@ -122,11 +145,24 @@ screen.
 
 == Screenshots ==
 
-1. The settings screen (Settings → Nextcloud Media): Nextcloud URL, username, app password, start folder and the thumbnail source option.
-2. The "Nextcloud" tab in the media dialog: browse folders, see thumbnails, select images (Select page / Select whole folder) and import.
-3. The "Import from Nextcloud" button on the Media Library screen, opening the importer in its own dialog.
+1. The settings screen (Settings → Cloud Media): per-account cloud type, server URL, username, app password, start folder and the thumbnail source option, with "Add cloud" for multiple accounts.
+2. The "Cloud" tab in the media dialog: pick an account, browse folders, see thumbnails, select images (Select page / Select whole folder) and import.
+3. The "Import from cloud" button on the Media Library screen, opening the importer in its own dialog.
 
 == Changelog ==
+
+= 2.0.0 =
+* Added support for ownCloud in addition to Nextcloud (both WebDAV based, using
+  an app password). Choose the cloud type per account.
+* You can now connect multiple cloud accounts at once and switch between them
+  from a dropdown in the media dialog.
+* Thumbnail source ("from the cloud server" vs. "generate in WordPress") is now
+  a per-account setting; provider-specific native preview endpoints are used
+  (Nextcloud preview, ownCloud thumbnail API).
+* Settings screen redesigned as a repeatable list of accounts with a per-account
+  connection test.
+* Existing single-account (Nextcloud) configurations are migrated automatically –
+  no action required.
 
 = 1.0.0 =
 * First public release.
@@ -200,6 +236,9 @@ screen.
   image import into the media library, administrator-only access.
 
 == Upgrade Notice ==
+
+= 2.0.0 =
+Adds ownCloud support and multiple accounts at once. Your existing Nextcloud account is migrated automatically.
 
 = 1.0.0 =
 First public release.

@@ -1,6 +1,7 @@
 <?php
 /**
- * Minimal WebDAV client for Nextcloud (PROPFIND to list, GET to download).
+ * Minimal WebDAV client for Nextcloud / ownCloud
+ * (PROPFIND to list, GET to download). One instance is bound to one account.
  *
  * @package NextcloudMediaBridge
  */
@@ -11,40 +12,54 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class NCMB_WebDAV {
 
-	/** @var array */
-	private $settings;
+	/** @var array The bound account (password decrypted). */
+	private $account;
 
-	public function __construct() {
-		$this->settings = NCMB_Settings::get();
+	/** @var array The provider definition for this account. */
+	private $provider;
+
+	/**
+	 * @param array $account An account array as returned by NCMB_Settings.
+	 */
+	public function __construct( array $account ) {
+		$this->account  = $account;
+		$this->provider = NCMB_Providers::get( isset( $account['provider'] ) ? $account['provider'] : '' );
 	}
 
 	public function is_configured() {
-		return '' !== $this->settings['base_url']
-			&& '' !== $this->settings['username']
-			&& '' !== $this->settings['app_password'];
+		return ! empty( $this->account['base_url'] )
+			&& ! empty( $this->account['username'] )
+			&& ! empty( $this->account['app_password'] );
 	}
 
 	/**
 	 * Base URL of the WebDAV endpoint for the configured user.
 	 */
 	private function dav_base() {
-		return $this->settings['base_url'] . '/remote.php/dav/files/' . rawurlencode( $this->settings['username'] );
+		$path = sprintf( $this->provider['dav_path'], rawurlencode( $this->account['username'] ) );
+		return $this->account['base_url'] . $path;
 	}
 
 	private function auth_header() {
 		// base64 here is not obfuscation but the encoding required by HTTP Basic Auth.
 		// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
-		return 'Basic ' . base64_encode( $this->settings['username'] . ':' . $this->settings['app_password'] );
+		return 'Basic ' . base64_encode( $this->account['username'] . ':' . $this->account['app_password'] );
 	}
 
 	/**
-	 * Builds the full URL for a path relative to the user root.
-	 * Each path segment is URL-encoded individually.
+	 * Encodes a path (each segment individually) for use in a URL.
 	 */
-	private function build_url( $path ) {
+	private function encode_path( $path ) {
 		$path     = '/' . ltrim( (string) $path, '/' );
 		$segments = array_map( 'rawurlencode', array_filter( explode( '/', $path ), 'strlen' ) );
-		return $this->dav_base() . '/' . implode( '/', $segments );
+		return implode( '/', $segments );
+	}
+
+	/**
+	 * Builds the full WebDAV URL for a path relative to the user root.
+	 */
+	private function build_url( $path ) {
+		return $this->dav_base() . '/' . $this->encode_path( $path );
 	}
 
 	/**
@@ -55,7 +70,7 @@ class NCMB_WebDAV {
 	 */
 	public function list_directory( $path ) {
 		if ( ! $this->is_configured() ) {
-			return new WP_Error( 'ncmb_not_configured', __( 'Nextcloud is not fully configured.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
+			return new WP_Error( 'ncmb_not_configured', __( 'This cloud account is not fully configured.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
 		}
 
 		$body = '<?xml version="1.0" encoding="utf-8"?>'
@@ -87,7 +102,7 @@ class NCMB_WebDAV {
 			return new WP_Error( 'ncmb_auth', __( 'Authentication failed. Please check the username and app password.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 401 ) );
 		}
 		if ( $code < 200 || $code >= 300 ) {
-			return new WP_Error( 'ncmb_http', sprintf( /* translators: %d: HTTP status code */ __( 'Nextcloud responded with status %d.', 'strychni0x-media-bridge-for-nextcloud' ), $code ), array( 'status' => 502 ) );
+			return new WP_Error( 'ncmb_http', sprintf( /* translators: %d: HTTP status code */ __( 'The cloud server responded with status %d.', 'strychni0x-media-bridge-for-nextcloud' ), $code ), array( 'status' => 502 ) );
 		}
 
 		return $this->parse_propfind( wp_remote_retrieve_body( $response ), $path );
@@ -104,7 +119,7 @@ class NCMB_WebDAV {
 		libxml_use_internal_errors( $prev );
 
 		if ( false === $xml ) {
-			return new WP_Error( 'ncmb_parse', __( 'The response from Nextcloud could not be parsed.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 502 ) );
+			return new WP_Error( 'ncmb_parse', __( 'The response from the cloud server could not be parsed.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 502 ) );
 		}
 
 		$xml->registerXPathNamespace( 'd', 'DAV:' );
@@ -184,7 +199,7 @@ class NCMB_WebDAV {
 	 */
 	public function download_to_temp( $path ) {
 		if ( ! $this->is_configured() ) {
-			return new WP_Error( 'ncmb_not_configured', __( 'Nextcloud is not configured.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
+			return new WP_Error( 'ncmb_not_configured', __( 'This cloud account is not configured.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
 		}
 
 		// wp_tempnam() lives in wp-admin/includes/file.php and is not guaranteed
@@ -226,30 +241,25 @@ class NCMB_WebDAV {
 	}
 
 	/**
-	 * Fetches a thumbnail via the Nextcloud preview endpoint.
+	 * Fetches a native thumbnail from the cloud server. The request is built
+	 * according to the provider's thumbnail strategy.
 	 *
-	 * @param int $file_id Nextcloud file ID (oc:fileid).
-	 * @param int $size    Edge length in pixels.
+	 * @param int    $file_id File ID (oc:fileid), used by the Nextcloud strategy.
+	 * @param string $path    Path relative to the user root, used by the other strategies.
+	 * @param int    $size    Edge length in pixels.
 	 * @return array{body:string,content_type:string}|WP_Error
 	 */
-	public function fetch_thumbnail( $file_id, $size = 256 ) {
+	public function fetch_thumbnail( $file_id, $path, $size = 256 ) {
 		if ( ! $this->is_configured() ) {
-			return new WP_Error( 'ncmb_not_configured', __( 'Nextcloud is not configured.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
+			return new WP_Error( 'ncmb_not_configured', __( 'This cloud account is not configured.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 400 ) );
 		}
 
-		$file_id = (int) $file_id;
-		$size    = max( 32, min( 1024, (int) $size ) );
+		$size = max( 32, min( 1024, (int) $size ) );
+		$url  = $this->thumbnail_url( (int) $file_id, (string) $path, $size );
 
-		$url = add_query_arg(
-			array(
-				'fileId'    => $file_id,
-				'x'         => $size,
-				'y'         => $size,
-				'a'         => 1, // Keep aspect ratio (no cropping).
-				'forceIcon' => 0,
-			),
-			$this->settings['base_url'] . '/index.php/core/preview'
-		);
+		if ( '' === $url ) {
+			return new WP_Error( 'ncmb_thumb', __( 'No preview available.', 'strychni0x-media-bridge-for-nextcloud' ), array( 'status' => 404 ) );
+		}
 
 		$response = wp_remote_get(
 			$url,
@@ -273,5 +283,44 @@ class NCMB_WebDAV {
 			'body'         => wp_remote_retrieve_body( $response ),
 			'content_type' => $ct ? $ct : 'image/jpeg',
 		);
+	}
+
+	/**
+	 * Builds the provider-specific native thumbnail URL. Empty string when the
+	 * required inputs are missing for that strategy.
+	 *
+	 * @param int    $file_id File ID.
+	 * @param string $path    Path relative to the user root.
+	 * @param int    $size    Edge length in pixels.
+	 * @return string
+	 */
+	private function thumbnail_url( $file_id, $path, $size ) {
+		$base = $this->account['base_url'];
+
+		switch ( $this->provider['thumb_strategy'] ) {
+			case 'files_thumbnail_path':
+				// ownCloud: /index.php/apps/files/api/v1/thumbnail/{x}/{y}/{path}
+				if ( '' === $path ) {
+					return '';
+				}
+				return $base . '/index.php/apps/files/api/v1/thumbnail/' . $size . '/' . $size . '/' . $this->encode_path( $path );
+
+			case 'preview_fileid':
+			default:
+				// Nextcloud: /index.php/core/preview?fileId=…
+				if ( $file_id <= 0 ) {
+					return '';
+				}
+				return add_query_arg(
+					array(
+						'fileId'    => $file_id,
+						'x'         => $size,
+						'y'         => $size,
+						'a'         => 1, // Keep aspect ratio (no cropping).
+						'forceIcon' => 0,
+					),
+					$base . '/index.php/core/preview'
+				);
+		}
 	}
 }

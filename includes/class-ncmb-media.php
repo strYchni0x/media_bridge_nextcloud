@@ -24,6 +24,28 @@ class NCMB_Media {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue' ) );
 	}
 
+	/**
+	 * Accounts list for the browser (id, label, provider, root_path) — no secrets.
+	 *
+	 * @return array<int,array>
+	 */
+	private function accounts_for_js() {
+		$out = array();
+		foreach ( NCMB_Settings::get_accounts() as $account ) {
+			// Only expose accounts that are usable.
+			if ( empty( $account['base_url'] ) || empty( $account['username'] ) ) {
+				continue;
+			}
+			$out[] = array(
+				'id'        => $account['id'],
+				'label'     => '' !== $account['label'] ? $account['label'] : NCMB_Providers::label( $account['provider'] ),
+				'provider'  => $account['provider'],
+				'root_path' => $account['root_path'],
+			);
+		}
+		return $out;
+	}
+
 	public function enqueue( $hook ) {
 		// Only administrators receive the script at all.
 		if ( ! current_user_can( ncmb_required_capability() ) ) {
@@ -52,10 +74,13 @@ class NCMB_Media {
 			'ncmb-media',
 			'NCMB',
 			array(
-				'restUrl' => esc_url_raw( rest_url( NCMB_REST::NS ) ),
-				'nonce'   => wp_create_nonce( 'wp_rest' ),
-				'i18n'    => array(
-					'tabTitle'       => __( 'Nextcloud', 'strychni0x-media-bridge-for-nextcloud' ),
+				'restUrl'  => esc_url_raw( rest_url( NCMB_REST::NS ) ),
+				'nonce'    => wp_create_nonce( 'wp_rest' ),
+				'accounts' => $this->accounts_for_js(),
+				'i18n'     => array(
+					'tabTitle'       => __( 'Cloud', 'strychni0x-media-bridge-for-nextcloud' ),
+					'account'        => __( 'Cloud', 'strychni0x-media-bridge-for-nextcloud' ),
+					'noAccounts'     => __( 'No cloud account is configured yet. Add one under Settings → Cloud Media.', 'strychni0x-media-bridge-for-nextcloud' ),
 					'loading'        => __( 'Loading…', 'strychni0x-media-bridge-for-nextcloud' ),
 					'importing'      => __( 'Importing…', 'strychni0x-media-bridge-for-nextcloud' ),
 					'import'         => __( 'Import', 'strychni0x-media-bridge-for-nextcloud' ),
@@ -76,8 +101,8 @@ class NCMB_Media {
 					'batchProgress'  => __( 'Importing %1$s of %2$s…', 'strychni0x-media-bridge-for-nextcloud' ),
 					/* translators: %1$s: succeeded count, %2$s: failed count. */
 					'batchDone'      => __( '%1$s imported, %2$s failed.', 'strychni0x-media-bridge-for-nextcloud' ),
-					'openImporter'   => __( 'Import from Nextcloud', 'strychni0x-media-bridge-for-nextcloud' ),
-					'importerTitle'  => __( 'Import from Nextcloud', 'strychni0x-media-bridge-for-nextcloud' ),
+					'openImporter'   => __( 'Import from cloud', 'strychni0x-media-bridge-for-nextcloud' ),
+					'importerTitle'  => __( 'Import from cloud', 'strychni0x-media-bridge-for-nextcloud' ),
 					'close'          => __( 'Close', 'strychni0x-media-bridge-for-nextcloud' ),
 				),
 			)

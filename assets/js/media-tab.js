@@ -22,25 +22,47 @@
 			'click .ncmb-select-folder': 'selectFolder',
 			'click .ncmb-select-none': 'selectNone',
 			'click .ncmb-import-selected': 'importSelected',
+			'change .ncmb-account-select': 'changeAccount',
 		},
 
 		initialize: function ( options ) {
 			this.controller = options.controller;
-			this.currentPath = '/';
-			this.rootPath = '/';
+			this.accounts = ( NCMB.accounts || [] ).slice();
+			this.accountId = this.accounts.length ? this.accounts[ 0 ].id : '';
+			this.currentPath = this.rootFor( this.accountId );
+			this.rootPath = this.currentPath;
 			this.currentPage = 1;
 			this.perPage = 40;
 			// Cross-page selection model: path -> true. Persists across page
-			// changes; the checkboxes only mirror it.
+			// changes; the checkboxes only mirror it. Scoped to the current
+			// account (cleared when the account is switched).
 			this.selection = {};
 		},
 
+		// Returns the configured start folder of an account (defaults to "/").
+		rootFor: function ( accountId ) {
+			for ( var i = 0; i < this.accounts.length; i++ ) {
+				if ( this.accounts[ i ].id === accountId ) {
+					return this.accounts[ i ].root_path || '/';
+				}
+			}
+			return '/';
+		},
+
 		render: function () {
+			if ( ! this.accounts.length ) {
+				this.$el.html(
+					'<div class="ncmb-status">' + escapeHtml( NCMB.i18n.noAccounts ) + '</div>'
+				);
+				return this;
+			}
 			this.load( this.currentPath, 1 );
 			return this;
 		},
 
 		request: function ( route, params, method ) {
+			params = params || {};
+			params.account = this.accountId;
 			return $.ajax( {
 				url: NCMB.restUrl + route,
 				method: method || 'GET',
@@ -49,6 +71,44 @@
 					xhr.setRequestHeader( 'X-WP-Nonce', NCMB.nonce );
 				},
 			} );
+		},
+
+		// Switches to another cloud account: reset path to its start folder and
+		// clear the (account-scoped) selection.
+		changeAccount: function ( e ) {
+			var id = $( e.currentTarget ).val();
+			if ( id === this.accountId ) {
+				return;
+			}
+			this.accountId = id;
+			this.selection = {};
+			this.rootPath = this.rootFor( id );
+			this.currentPath = this.rootPath;
+			this.load( this.currentPath, 1 );
+		},
+
+		// Builds the account picker (only shown when more than one account exists).
+		renderAccountPicker: function () {
+			if ( this.accounts.length <= 1 ) {
+				return '';
+			}
+			var self = this;
+			var opts = this.accounts
+				.map( function ( a ) {
+					var sel = a.id === self.accountId ? ' selected' : '';
+					return (
+						'<option value="' + escapeAttr( a.id ) + '"' + sel + '>' +
+						escapeHtml( a.label ) +
+						'</option>'
+					);
+				} )
+				.join( '' );
+			return (
+				'<label class="ncmb-account-picker">' +
+				escapeHtml( NCMB.i18n.account ) + ': ' +
+				'<select class="ncmb-account-select">' + opts + '</select>' +
+				'</label>'
+			);
 		},
 
 		load: function ( path, page ) {
@@ -78,6 +138,7 @@
 
 		renderListing: function ( data ) {
 			var html = '<div class="ncmb-toolbar">';
+			html += this.renderAccountPicker();
 			html += '<span class="ncmb-path">' + escapeHtml( data.path ) + '</span>';
 			if ( data.path !== this.rootPath && data.path !== '/' ) {
 				html += '<button type="button" class="button ncmb-up">↑ ' + NCMB.i18n.up + '</button>';
@@ -120,20 +181,22 @@
 					'</div>';
 
 				var selection = this.selection;
+				var accountId = this.accountId;
 				html += '<ul class="ncmb-grid">';
 				images.forEach( function ( img ) {
 					var isSel = !! selection[ img.path ];
-					var thumb = img.file_id
-						? NCMB.restUrl +
-							'/thumb?file_id=' +
-							encodeURIComponent( img.file_id ) +
-							'&path=' +
-							encodeURIComponent( img.path ) +
-							'&size=256&bytes=' +
-							encodeURIComponent( img.size || 0 ) +
-							'&_wpnonce=' +
-							encodeURIComponent( NCMB.nonce )
-						: '';
+					var thumb =
+						NCMB.restUrl +
+						'/thumb?account=' +
+						encodeURIComponent( accountId ) +
+						'&file_id=' +
+						encodeURIComponent( img.file_id || 0 ) +
+						'&path=' +
+						encodeURIComponent( img.path ) +
+						'&size=256&bytes=' +
+						encodeURIComponent( img.size || 0 ) +
+						'&_wpnonce=' +
+						encodeURIComponent( NCMB.nonce );
 					html +=
 						'<li class="ncmb-tile' +
 						( isSel ? ' ncmb-selected' : '' ) +

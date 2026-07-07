@@ -1,0 +1,44 @@
+/* Settings screen: repeatable cloud account rows. */
+.ncmb-settings-wrap .ncmb-account {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	padding: 4px 16px 8px;
+	margin: 0 0 16px;
+	background: #fff;
+}
+
+.ncmb-settings-wrap .ncmb-account-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 8px 0 4px;
+	border-bottom: 1px solid #f0f0f1;
+	margin-bottom: 4px;
+}
+
+.ncmb-settings-wrap .ncmb-account-title {
+	font-size: 14px;
+}
+
+.ncmb-settings-wrap .ncmb-remove-account {
+	color: #b32d2e;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.ncmb-settings-wrap .ncmb-remove-account:hover {
+	color: #d63638;
+}
+
+/* Only one account left: hide its remove control (there must be at least the row). */
+.ncmb-settings-wrap.ncmb-single .ncmb-remove-account {
+	visibility: hidden;
+}
+
+.ncmb-settings-wrap .ncmb-account .form-table {
+	margin-top: 0;
+}
+
+.ncmb-settings-wrap .ncmb-test-result {
+	font-weight: 600;
+}

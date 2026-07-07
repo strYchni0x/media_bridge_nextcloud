@@ -1,6 +1,6 @@
 <?php
 /**
- * Imports a Nextcloud file into the WordPress media library (variant A: copy).
+ * Imports a cloud file into the WordPress media library (variant A: copy).
  *
  * @package NextcloudMediaBridge
  */
@@ -12,17 +12,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 class NCMB_Importer {
 
 	/**
-	 * Downloads a file from Nextcloud and creates an attachment.
+	 * Downloads a file from the given account and creates an attachment.
 	 *
-	 * @param string $path Path relative to the user root in Nextcloud.
+	 * @param array  $account The account (password decrypted).
+	 * @param string $path    Path relative to the user root on the cloud server.
 	 * @return array|WP_Error Attachment data on success.
 	 */
-	public function import( $path ) {
+	public function import( array $account, $path ) {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/media.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 
-		$webdav = new NCMB_WebDAV();
+		$webdav = new NCMB_WebDAV( $account );
 		$result = $webdav->download_to_temp( $path );
 		if ( is_wp_error( $result ) ) {
 			return $result;
@@ -63,6 +64,8 @@ class NCMB_Importer {
 		}
 
 		// Record the origin as metadata (duplicate detection / reference).
+		update_post_meta( $attachment_id, '_ncmb_source_account', isset( $account['id'] ) ? $account['id'] : '' );
+		update_post_meta( $attachment_id, '_ncmb_source_provider', isset( $account['provider'] ) ? $account['provider'] : '' );
 		update_post_meta( $attachment_id, '_ncmb_source_path', $path );
 		update_post_meta( $attachment_id, '_ncmb_imported_at', current_time( 'mysql' ) );
 
