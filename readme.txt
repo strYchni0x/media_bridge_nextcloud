@@ -4,7 +4,7 @@ Tags: media, nextcloud, owncloud, webdav, media-library
 Requires at least: 6.0
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,6 +28,9 @@ between them with a dropdown in the media dialog.
 Imported images become regular WordPress attachments (a copy is downloaded from
 the cloud server), so they work with every theme, block and page builder without
 any further integration.
+
+The interface is in English and fully translatable. A complete German
+translation (de_DE, incl. de_DE_formal) is bundled with the plugin.
 
 = Features =
 
@@ -150,6 +153,12 @@ screen.
 3. The "Import from cloud" button on the Media Library screen, opening the importer in its own dialog.
 
 == Changelog ==
+
+= 2.1.0 =
+* Added a complete German translation (de_DE and de_DE_formal), bundled with
+  the plugin, plus a .pot template for further languages.
+* The bundled translations are now loaded via load_plugin_textdomain (new
+  "Domain Path: /languages" header).
 
 = 2.0.0 =
 * Added support for ownCloud in addition to Nextcloud (both WebDAV based, using

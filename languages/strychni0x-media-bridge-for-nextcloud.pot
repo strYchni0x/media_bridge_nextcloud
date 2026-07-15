@@ -1,0 +1,216 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: strychni0x Media Bridge for Nextcloud & ownCloud 2.1.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/strychni0x-media-bridge-for-nextcloud\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-07-15 12:00+0200\n"
+"X-Domain: strychni0x-media-bridge-for-nextcloud\n"
+
+msgid "Only image files can be imported."
+msgstr ""
+
+msgid "Import failed: %s"
+msgstr ""
+
+msgid "Cloud"
+msgstr ""
+
+msgid "No cloud account is configured yet. Add one under Settings → Cloud Media."
+msgstr ""
+
+msgid "Loading…"
+msgstr ""
+
+msgid "Importing…"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Up one level"
+msgstr ""
+
+msgid "No images in this folder."
+msgstr ""
+
+msgid "Error"
+msgstr ""
+
+msgid "Imported to the media library."
+msgstr ""
+
+msgid "Previous"
+msgstr ""
+
+msgid "Next"
+msgstr ""
+
+msgid "Page %1$s of %2$s"
+msgstr ""
+
+msgid "Select page"
+msgstr ""
+
+msgid "Select whole folder"
+msgstr ""
+
+msgid "Clear selection"
+msgstr ""
+
+msgid "Import selection (%s)"
+msgstr ""
+
+msgid "Importing %1$s of %2$s…"
+msgstr ""
+
+msgid "%1$s imported, %2$s failed."
+msgstr ""
+
+msgid "Import from cloud"
+msgstr ""
+
+msgid "Close"
+msgstr ""
+
+msgid "Uses the Nextcloud preview endpoint."
+msgstr ""
+
+msgid "Uses the ownCloud files thumbnail API."
+msgstr ""
+
+msgid "Access for administrators only."
+msgstr ""
+
+msgid "The selected cloud account does not exist."
+msgstr ""
+
+msgid "Invalid image reference."
+msgstr ""
+
+msgid "Cloud account"
+msgstr ""
+
+msgid "strychni0x Media Bridge"
+msgstr ""
+
+msgid "Cloud Media"
+msgstr ""
+
+msgid "Checking…"
+msgstr ""
+
+msgid "OK – Connection successful."
+msgstr ""
+
+msgid "Save the settings before testing this account."
+msgstr ""
+
+msgid "Remove this cloud"
+msgstr ""
+
+msgid "Remove this cloud account from the list?"
+msgstr ""
+
+msgid "You do not have permission to access this page."
+msgstr ""
+
+msgid "Connect one or more Nextcloud or ownCloud accounts. All configured clouds are available at the same time from the media dialog."
+msgstr ""
+
+msgid "Add cloud"
+msgstr ""
+
+msgid "New cloud"
+msgstr ""
+
+msgid "Remove"
+msgstr ""
+
+msgid "Name"
+msgstr ""
+
+msgid "e.g. Team photos"
+msgstr ""
+
+msgid "A label shown in the media dialog. Optional – defaults to the host name."
+msgstr ""
+
+msgid "Cloud type"
+msgstr ""
+
+msgid "Server URL"
+msgstr ""
+
+msgid "Base URL without a trailing slash."
+msgstr ""
+
+msgid "Username"
+msgstr ""
+
+msgid "App password"
+msgstr ""
+
+msgid "Create an app password in your cloud (Settings → Security). Do not use your normal login password."
+msgstr ""
+
+msgid "A password is stored. Leave the field empty to keep it."
+msgstr ""
+
+msgid "Start folder"
+msgstr ""
+
+msgid "Path relative to the user root, e.g. /Photos. Default: /"
+msgstr ""
+
+msgid "Thumbnails"
+msgstr ""
+
+msgid "From the cloud server"
+msgstr ""
+
+msgid "Generate in WordPress"
+msgstr ""
+
+msgid "Default: from the server (uses its preview/thumbnail endpoint). If the server generates no previews, WordPress can build and cache them – it downloads each image once."
+msgstr ""
+
+msgid "Connection"
+msgstr ""
+
+msgid "Check connection"
+msgstr ""
+
+msgid "Save the settings first to test a newly added account."
+msgstr ""
+
+msgid "No preview available."
+msgstr ""
+
+msgid "Image too large for thumbnail generation."
+msgstr ""
+
+msgid "Thumbnail generation failed: %s"
+msgstr ""
+
+msgid "This cloud account is not fully configured."
+msgstr ""
+
+msgid "Authentication failed. Please check the username and app password."
+msgstr ""
+
+msgid "The cloud server responded with status %d."
+msgstr ""
+
+msgid "The response from the cloud server could not be parsed."
+msgstr ""
+
+msgid "This cloud account is not configured."
+msgstr ""
+
+msgid "Could not create a temporary file."
+msgstr ""
+
+msgid "Download failed (status %d)."
+msgstr ""

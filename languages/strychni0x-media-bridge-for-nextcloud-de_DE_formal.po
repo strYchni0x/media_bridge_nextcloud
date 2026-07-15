@@ -1,0 +1,217 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: strychni0x Media Bridge for Nextcloud & ownCloud 2.1.0\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2026-07-15 12:00+0200\n"
+"Language: de_DE_formal\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Domain: strychni0x-media-bridge-for-nextcloud\n"
+
+msgid "Only image files can be imported."
+msgstr "Es können nur Bilddateien importiert werden."
+
+msgid "Import failed: %s"
+msgstr "Import fehlgeschlagen: %s"
+
+msgid "Cloud"
+msgstr "Cloud"
+
+msgid "No cloud account is configured yet. Add one under Settings → Cloud Media."
+msgstr "Es ist noch kein Cloud-Konto eingerichtet. Unter Einstellungen → Cloud-Medien eines hinzufügen."
+
+msgid "Loading…"
+msgstr "Lädt…"
+
+msgid "Importing…"
+msgstr "Importiere…"
+
+msgid "Import"
+msgstr "Importieren"
+
+msgid "Up one level"
+msgstr "Eine Ebene nach oben"
+
+msgid "No images in this folder."
+msgstr "Keine Bilder in diesem Ordner."
+
+msgid "Error"
+msgstr "Fehler"
+
+msgid "Imported to the media library."
+msgstr "In die Mediathek importiert."
+
+msgid "Previous"
+msgstr "Zurück"
+
+msgid "Next"
+msgstr "Weiter"
+
+msgid "Page %1$s of %2$s"
+msgstr "Seite %1$s von %2$s"
+
+msgid "Select page"
+msgstr "Seite auswählen"
+
+msgid "Select whole folder"
+msgstr "Ganzen Ordner auswählen"
+
+msgid "Clear selection"
+msgstr "Auswahl aufheben"
+
+msgid "Import selection (%s)"
+msgstr "Auswahl importieren (%s)"
+
+msgid "Importing %1$s of %2$s…"
+msgstr "Importiere %1$s von %2$s…"
+
+msgid "%1$s imported, %2$s failed."
+msgstr "%1$s importiert, %2$s fehlgeschlagen."
+
+msgid "Import from cloud"
+msgstr "Aus der Cloud importieren"
+
+msgid "Close"
+msgstr "Schließen"
+
+msgid "Uses the Nextcloud preview endpoint."
+msgstr "Nutzt den Vorschau-Endpunkt von Nextcloud."
+
+msgid "Uses the ownCloud files thumbnail API."
+msgstr "Nutzt die Thumbnail-API von ownCloud."
+
+msgid "Access for administrators only."
+msgstr "Zugriff nur für Administratoren."
+
+msgid "The selected cloud account does not exist."
+msgstr "Das gewählte Cloud-Konto existiert nicht."
+
+msgid "Invalid image reference."
+msgstr "Ungültige Bild-Referenz."
+
+msgid "Cloud account"
+msgstr "Cloud-Konto"
+
+msgid "strychni0x Media Bridge"
+msgstr "strychni0x Media Bridge"
+
+msgid "Cloud Media"
+msgstr "Cloud-Medien"
+
+msgid "Checking…"
+msgstr "Prüfe…"
+
+msgid "OK – Connection successful."
+msgstr "OK – Verbindung erfolgreich."
+
+msgid "Save the settings before testing this account."
+msgstr "Die Einstellungen speichern, bevor dieses Konto getestet wird."
+
+msgid "Remove this cloud"
+msgstr "Diese Cloud entfernen"
+
+msgid "Remove this cloud account from the list?"
+msgstr "Dieses Cloud-Konto aus der Liste entfernen?"
+
+msgid "You do not have permission to access this page."
+msgstr "Keine Berechtigung für diese Seite."
+
+msgid "Connect one or more Nextcloud or ownCloud accounts. All configured clouds are available at the same time from the media dialog."
+msgstr "Ein oder mehrere Nextcloud- oder ownCloud-Konten verbinden. Alle eingerichteten Clouds sind gleichzeitig im Medien-Dialog verfügbar."
+
+msgid "Add cloud"
+msgstr "Cloud hinzufügen"
+
+msgid "New cloud"
+msgstr "Neue Cloud"
+
+msgid "Remove"
+msgstr "Entfernen"
+
+msgid "Name"
+msgstr "Name"
+
+msgid "e.g. Team photos"
+msgstr "z. B. Team-Fotos"
+
+msgid "A label shown in the media dialog. Optional – defaults to the host name."
+msgstr "Bezeichnung im Medien-Dialog. Optional – Standard ist der Hostname."
+
+msgid "Cloud type"
+msgstr "Cloud-Typ"
+
+msgid "Server URL"
+msgstr "Server-URL"
+
+msgid "Base URL without a trailing slash."
+msgstr "Basis-URL ohne Schrägstrich am Ende."
+
+msgid "Username"
+msgstr "Benutzername"
+
+msgid "App password"
+msgstr "App-Passwort"
+
+msgid "Create an app password in your cloud (Settings → Security). Do not use your normal login password."
+msgstr "In der Cloud ein App-Passwort erstellen (Einstellungen → Sicherheit). Nicht das normale Anmelde-Passwort verwenden."
+
+msgid "A password is stored. Leave the field empty to keep it."
+msgstr "Ein Passwort ist gespeichert. Feld leer lassen, um es zu behalten."
+
+msgid "Start folder"
+msgstr "Startordner"
+
+msgid "Path relative to the user root, e.g. /Photos. Default: /"
+msgstr "Pfad relativ zum Benutzer-Stammordner, z. B. /Fotos. Standard: /"
+
+msgid "Thumbnails"
+msgstr "Vorschaubilder"
+
+msgid "From the cloud server"
+msgstr "Vom Cloud-Server"
+
+msgid "Generate in WordPress"
+msgstr "In WordPress erzeugen"
+
+msgid "Default: from the server (uses its preview/thumbnail endpoint). If the server generates no previews, WordPress can build and cache them – it downloads each image once."
+msgstr "Standard: vom Server (nutzt dessen Vorschau-/Thumbnail-Endpunkt). Erzeugt der Server keine Vorschauen, kann WordPress sie erstellen und zwischenspeichern – dafür wird jedes Bild einmal heruntergeladen."
+
+msgid "Connection"
+msgstr "Verbindung"
+
+msgid "Check connection"
+msgstr "Verbindung prüfen"
+
+msgid "Save the settings first to test a newly added account."
+msgstr "Zum Testen eines neu hinzugefügten Kontos zuerst die Einstellungen speichern."
+
+msgid "No preview available."
+msgstr "Keine Vorschau verfügbar."
+
+msgid "Image too large for thumbnail generation."
+msgstr "Bild zu groß für die Vorschau-Erzeugung."
+
+msgid "Thumbnail generation failed: %s"
+msgstr "Vorschau-Erzeugung fehlgeschlagen: %s"
+
+msgid "This cloud account is not fully configured."
+msgstr "Dieses Cloud-Konto ist nicht vollständig eingerichtet."
+
+msgid "Authentication failed. Please check the username and app password."
+msgstr "Anmeldung fehlgeschlagen. Bitte Benutzername und App-Passwort prüfen."
+
+msgid "The cloud server responded with status %d."
+msgstr "Der Cloud-Server antwortete mit Status %d."
+
+msgid "The response from the cloud server could not be parsed."
+msgstr "Die Antwort des Cloud-Servers konnte nicht verarbeitet werden."
+
+msgid "This cloud account is not configured."
+msgstr "Dieses Cloud-Konto ist nicht eingerichtet."
+
+msgid "Could not create a temporary file."
+msgstr "Es konnte keine temporäre Datei erstellt werden."
+
+msgid "Download failed (status %d)."
+msgstr "Download fehlgeschlagen (Status %d)."
