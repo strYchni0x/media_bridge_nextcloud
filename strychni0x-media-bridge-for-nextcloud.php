@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       strychni0x Media Bridge for Nextcloud & ownCloud
  * Description:        Browse photos stored on Nextcloud or ownCloud servers from the WordPress media library and import them as media. Multiple accounts at once. Administrators only.
- * Version:           2.1.0
+ * Version:           2.1.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Florian Willnat
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'NCMB_VERSION', '2.1.0' );
+define( 'NCMB_VERSION', '2.1.1' );
 define( 'NCMB_FILE', __FILE__ );
 define( 'NCMB_DIR', plugin_dir_path( __FILE__ ) );
 define( 'NCMB_URL', plugin_dir_url( __FILE__ ) );

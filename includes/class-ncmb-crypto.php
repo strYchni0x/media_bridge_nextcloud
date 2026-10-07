@@ -51,8 +51,13 @@ class NCMB_Crypto {
 			$nonce  = random_bytes( SODIUM_CRYPTO_SECRETBOX_NONCEBYTES );
 			$cipher = sodium_crypto_secretbox( $plaintext, $nonce, $key );
 			$out    = self::PREFIX_SODIUM . base64_encode( $nonce . $cipher ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- binary payload, not obfuscation.
-			if ( function_exists( 'sodium_memzero' ) ) {
-				sodium_memzero( $key );
+			// Only the real extension can wipe memory; WordPress' sodium_compat
+			// polyfill throws a SodiumException instead.
+			if ( extension_loaded( 'sodium' ) ) {
+				try {
+					sodium_memzero( $key );
+				} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch -- wiping is best effort.
+				}
 			}
 			return $out;
 		}

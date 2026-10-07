@@ -2,9 +2,9 @@
 Contributors: strychni0x
 Tags: media, nextcloud, owncloud, webdav, media-library
 Requires at least: 6.0
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 2.1.0
+Stable tag: 2.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -154,6 +154,11 @@ screen.
 
 == Changelog ==
 
+= 2.1.1 =
+* Fixed a fatal error when saving the settings on servers without the PHP
+  libsodium extension (WordPress' sodium_compat fallback cannot wipe memory
+  and threw an exception).
+
 = 2.1.0 =
 * Added a complete German translation (de_DE and de_DE_formal), bundled with
   the plugin, plus a .pot template for further languages.
@@ -245,6 +250,9 @@ screen.
   image import into the media library, administrator-only access.
 
 == Upgrade Notice ==
+
+= 2.1.1 =
+Fixes a fatal error when saving the settings on servers without the PHP libsodium extension.
 
 = 2.0.0 =
 Adds ownCloud support and multiple accounts at once. Your existing Nextcloud account is migrated automatically.
